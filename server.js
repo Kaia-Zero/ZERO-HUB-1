@@ -12,16 +12,9 @@ const PORT = process.env.PORT || 3000;
 
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 
-if (!ADMIN_PASSWORD) {
-    console.error("ADMIN_PASSWORD is not configured.");
-}
-
-// ==============================
-// FILES
-// ==============================
-
 const KEYS_FILE = path.join(__dirname, "keys.json");
 const SCRIPT_FILE = path.join(__dirname, "script.lua");
+const ADMIN_FILE = path.join(__dirname, "admin.html");
 
 // ==============================
 // MIDDLEWARE
@@ -46,7 +39,8 @@ function loadKeys() {
         return JSON.parse(
             fs.readFileSync(KEYS_FILE, "utf8")
         );
-    } catch {
+    } catch (error) {
+        console.error("Key database error:", error);
         return { keys: [] };
     }
 }
@@ -63,14 +57,17 @@ function saveKeys(data) {
 // ==============================
 
 function generateKey() {
-    return "ZERO-" +
-        crypto.randomBytes(12)
+    return (
+        "ZERO-" +
+        crypto
+            .randomBytes(12)
             .toString("hex")
-            .toUpperCase();
+            .toUpperCase()
+    );
 }
 
 // ==============================
-// CHECK KEY
+// VALIDATE KEY
 // ==============================
 
 function findValidKey(key) {
@@ -84,15 +81,15 @@ function findValidKey(key) {
         return null;
     }
 
-    if (!item.enabled) {
+    if (item.enabled !== true) {
         return null;
     }
 
     if (item.expiresAt !== null) {
-        const expired =
-            new Date(item.expiresAt).getTime() <= Date.now();
+        const expiration =
+            new Date(item.expiresAt).getTime();
 
-        if (expired) {
+        if (expiration <= Date.now()) {
             return null;
         }
     }
@@ -105,11 +102,14 @@ function findValidKey(key) {
 // ==============================
 
 function adminAuth(req, res, next) {
-    const password = req.headers["x-admin-password"];
 
-    if (!ADMIN_PASSWORD ||
-        password !== ADMIN_PASSWORD) {
+    const password =
+        req.headers["x-admin-password"];
 
+    if (
+        !ADMIN_PASSWORD ||
+        password !== ADMIN_PASSWORD
+    ) {
         return res.status(401).json({
             success: false,
             message: "Unauthorized"
@@ -130,7 +130,22 @@ app.get("/", (req, res) => {
 });
 
 // ==============================
-// CHECK API KEY
+// ADMIN PAGE
+// ==============================
+
+app.get("/admin", (req, res) => {
+
+    if (!fs.existsSync(ADMIN_FILE)) {
+        return res.status(404).send(
+            "admin.html not found"
+        );
+    }
+
+    res.sendFile(ADMIN_FILE);
+});
+
+// ==============================
+// CHECK KEY
 // ==============================
 
 app.get("/api/check", (req, res) => {
@@ -168,7 +183,8 @@ app.get("/raw", (req, res) => {
     const key = req.query.key;
 
     if (!key) {
-        return res.status(403)
+        return res
+            .status(403)
             .type("text/plain")
             .send("-- Access denied");
     }
@@ -176,21 +192,24 @@ app.get("/raw", (req, res) => {
     const valid = findValidKey(key);
 
     if (!valid) {
-        return res.status(403)
+        return res
+            .status(403)
             .type("text/plain")
             .send("-- Invalid or expired key");
     }
 
     if (!fs.existsSync(SCRIPT_FILE)) {
-        return res.status(404)
+        return res
+            .status(404)
             .type("text/plain")
             .send("-- Script not found");
     }
 
-    const script = fs.readFileSync(
-        SCRIPT_FILE,
-        "utf8"
-    );
+    const script =
+        fs.readFileSync(
+            SCRIPT_FILE,
+            "utf8"
+        );
 
     res
         .status(200)
@@ -199,7 +218,7 @@ app.get("/raw", (req, res) => {
 });
 
 // ==============================
-// ADMIN: LIST KEYS
+// ADMIN - LIST KEYS
 // ==============================
 
 app.get(
@@ -217,7 +236,7 @@ app.get(
 );
 
 // ==============================
-// ADMIN: CREATE KEY
+// ADMIN - CREATE KEY
 // ==============================
 
 app.post(
@@ -225,9 +244,13 @@ app.post(
     adminAuth,
     (req, res) => {
 
-        const days = Number(req.body.days);
+        const days =
+            Number(req.body.days);
 
-        if (!Number.isInteger(days) || days < 0) {
+        if (
+            !Number.isInteger(days) ||
+            days < 0
+        ) {
             return res.status(400).json({
                 success: false,
                 message: "Invalid days"
@@ -241,31 +264,38 @@ app.post(
         let expiresAt = null;
 
         if (days > 0) {
-            expiresAt = new Date(
-                Date.now() +
-                days * 24 * 60 * 60 * 1000
-            ).toISOString();
+
+            expiresAt =
+                new Date(
+                    Date.now() +
+                    days *
+                    24 *
+                    60 *
+                    60 *
+                    1000
+                ).toISOString();
         }
 
         database.keys.push({
-            key,
+            key: key,
             enabled: true,
-            createdAt: new Date().toISOString(),
-            expiresAt
+            createdAt:
+                new Date().toISOString(),
+            expiresAt: expiresAt
         });
 
         saveKeys(database);
 
         res.json({
             success: true,
-            key,
-            expiresAt
+            key: key,
+            expiresAt: expiresAt
         });
     }
 );
 
 // ==============================
-// ADMIN: ENABLE / DISABLE
+// ADMIN - ENABLE / DISABLE
 // ==============================
 
 app.patch(
@@ -275,9 +305,12 @@ app.patch(
 
         const database = loadKeys();
 
-        const item = database.keys.find(
-            x => x.key === req.params.key
-        );
+        const item =
+            database.keys.find(
+                x =>
+                    x.key ===
+                    req.params.key
+            );
 
         if (!item) {
             return res.status(404).json({
@@ -300,7 +333,7 @@ app.patch(
 );
 
 // ==============================
-// ADMIN: DELETE KEY
+// ADMIN - DELETE KEY
 // ==============================
 
 app.delete(
@@ -310,14 +343,20 @@ app.delete(
 
         const database = loadKeys();
 
-        const before = database.keys.length;
+        const oldLength =
+            database.keys.length;
 
         database.keys =
             database.keys.filter(
-                x => x.key !== req.params.key
+                x =>
+                    x.key !==
+                    req.params.key
             );
 
-        if (database.keys.length === before) {
+        if (
+            database.keys.length ===
+            oldLength
+        ) {
             return res.status(404).json({
                 success: false,
                 message: "Key not found"
@@ -338,6 +377,7 @@ app.delete(
 // ==============================
 
 app.get("/api/info", (req, res) => {
+
     res.json({
         name: "Zero HUB",
         status: "online",
@@ -346,10 +386,11 @@ app.get("/api/info", (req, res) => {
 });
 
 // ==============================
-// START
+// START SERVER
 // ==============================
 
 app.listen(PORT, () => {
+
     console.log(
         `Zero HUB running on port ${PORT}`
     );
