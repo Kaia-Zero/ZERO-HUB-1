@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Zero HUB Admin</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    background: #080808;
+    color: #fff;
+    font-family: Arial, sans-serif;
+    padding: 20px;
+}
+
+.container {
+    max-width: 700px;
+    margin: auto;
+}
+
+h1 {
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    color: #888;
+    margin-bottom: 25px;
+}
+
+.card {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 18px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+input,
+select,
+button {
+    width: 100%;
+    padding: 13px;
+    margin-top: 10px;
+    border-radius: 10px;
+    border: 1px solid #333;
+    background: #181818;
+    color: white;
+    font-size: 15px;
+}
+
+button {
+    cursor: pointer;
+    background: #d4af37;
+    color: #000;
+    border: none;
+    font-weight: bold;
+}
+
+button.danger {
+    background: #3a1515;
+    color: #ff7777;
+}
+
+button.secondary {
+    background: #222;
+    color: white;
+}
+
+.key {
+    word-break: break-all;
+    font-family: monospace;
+    color: #d4af37;
+    margin-bottom: 8px;
+}
+
+.status {
+    margin-top: 8px;
+    font-size: 14px;
+}
+
+.online {
+    color: #6cff8d;
+}
+
+.offline {
+    color: #ff7777;
+}
+
+.actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.actions button {
+    margin: 0;
+}
+
+#message {
+    margin-top: 15px;
+    color: #aaa;
+    text-align: center;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Zero HUB</h1>
+    <div class="subtitle">Key Management</div>
+
+    <div class="card" id="loginCard">
+        <h3>🔐 Admin Login</h3>
+
+        <input
+            id="password"
+            type="password"
+            placeholder="Admin Password"
+        >
+
+        <button onclick="login()">
+            เข้าสู่ระบบ
+        </button>
+    </div>
+
+    <div id="panel" style="display:none;">
+
+        <div class="card">
+            <h3>สร้าง Key</h3>
+
+            <select id="days">
+                <option value="1">1 วัน</option>
+                <option value="7">7 วัน</option>
+                <option value="30">30 วัน</option>
+                <option value="90">90 วัน</option>
+                <option value="0">ไม่หมดอายุ</option>
+            </select>
+
+            <button onclick="createKey()">
+                + สร้าง Key
+            </button>
+        </div>
+
+        <div class="card">
+            <h3>จัดการ Keys</h3>
+
+            <button
+                class="secondary"
+                onclick="loadKeys()"
+            >
+                รีเฟรช
+            </button>
+
+            <div id="keys"></div>
+        </div>
+
+    </div>
+
+    <div id="message"></div>
+
+</div>
+
+<script>
+
+let adminPassword = "";
+
+function message(text) {
+    document.getElementById("message").textContent = text;
+}
+
+async function login() {
+
+    const password =
+        document.getElementById("password").value.trim();
+
+    if (!password) {
+        message("กรุณาใส่รหัส Admin");
+        return;
+    }
+
+    adminPassword = password;
+
+    try {
+
+        const response = await fetch(
+            "/api/admin/keys",
+            {
+                headers: {
+                    "x-admin-password":
+                        adminPassword
+                }
+            }
+        );
+
+        if (!response.ok) {
+            adminPassword = "";
+            message("รหัส Admin ไม่ถูกต้อง");
+            return;
+        }
+
+        document.getElementById(
+            "loginCard"
+        ).style.display = "none";
+
+        document.getElementById(
+            "panel"
+        ).style.display = "block";
+
+        message("เข้าสู่ระบบสำเร็จ");
+
+        loadKeys();
+
+    } catch (error) {
+        message("เชื่อมต่อ Server ไม่สำเร็จ");
+    }
+}
+
+async function loadKeys() {
+
+    try {
+
+        const response = await fetch(
+            "/api/admin/keys",
+            {
+                headers: {
+                    "x-admin-password":
+                        adminPassword
+                }
+            }
+        );
+
+        if (!response.ok) {
+            message("ไม่สามารถโหลด Keys ได้");
+            return;
+        }
+
+        const data = await response.json();
+
+        renderKeys(data.keys);
+
+    } catch (error) {
+        message("เกิดข้อผิดพลาด");
+    }
+}
+
+function renderKeys(keys) {
+
+    const container =
+        document.getElementById("keys");
+
+    if (!keys.length) {
+        container.innerHTML =
+            "<p style='color:#777'>ยังไม่มี Key</p>";
+        return;
+    }
+
+    container.innerHTML = "";
+
+    keys.forEach(item => {
+
+        const div =
+            document.createElement("div");
+
+        div.className = "card";
+
+        const enabled =
+            item.enabled === true;
+
+        let expiry = "ไม่หมดอายุ";
+
+        if (item.expiresAt) {
+
+            expiry =
+                new Date(
+                    item.expiresAt
+                ).toLocaleString("th-TH");
+        }
+
+        div.innerHTML = `
+            <div class="key">
+                ${escapeHTML(item.key)}
+            </div>
+
+            <div>
+                หมดอายุ:
+                ${escapeHTML(expiry)}
+            </div>
+
+            <div class="status ${
+                enabled
+                ? "online"
+                : "offline"
+            }">
+                ${enabled
+                ? "🟢 เปิดใช้งาน"
+                : "🔴 ปิดใช้งาน"}
+            </div>
+
+            <div class="actions">
+
+                <button
+                    class="secondary"
+                    onclick="toggleKey(
+                        '${encodeURIComponent(item.key)}',
+                        ${!enabled}
+                    )"
+                >
+                    ${enabled ? "ปิด" : "เปิด"}
+                </button>
+
+                <button
+                    onclick="copyKey(
+                        '${encodeURIComponent(item.key)}'
+                    )"
+                >
+                    คัดลอก
+                </button>
+
+                <button
+                    class="danger"
+                    onclick="deleteKey(
+                        '${encodeURIComponent(item.key)}'
+                    )"
+                >
+                    ลบ
+                </button>
+
+            </div>
+        `;
+
+        container.appendChild(div);
+    });
+}
+
+async function createKey() {
+
+    const days =
+        Number(
+            document.getElementById("days").value
+        );
+
+    try {
+
+        const response = await fetch(
+            "/api/admin/keys",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type":
+                        "application/json",
+
+                    "x-admin-password":
+                        adminPassword
+                },
+
+                body: JSON.stringify({
+                    days
+                })
+            }
+        );
+
+        const data =
+            await response.json();
+
+        if (!response.ok) {
+            message(
+                data.message ||
+                "สร้าง Key ไม่สำเร็จ"
+            );
+            return;
+        }
+
+        message(
+            "สร้าง Key สำเร็จ: " +
+            data.key
+        );
+
+        loadKeys();
+
+    } catch (error) {
+        message("เกิดข้อผิดพลาด");
+    }
+}
+
+async function toggleKey(
+    encodedKey,
+    enabled
+) {
+
+    const key =
+        decodeURIComponent(encodedKey);
+
+    try {
+
+        const response = await fetch(
+            "/api/admin/keys/" +
+            encodeURIComponent(key),
+            {
+                method: "PATCH",
+
+                headers: {
+                    "Content-Type":
+                        "application/json",
+
+                    "x-admin-password":
+                        adminPassword
+                },
+
+                body: JSON.stringify({
+                    enabled
+                })
+            }
+        );
+
+        if (!response.ok) {
+            message("เปลี่ยนสถานะไม่สำเร็จ");
+            return;
+        }
+
+        loadKeys();
+
+    } catch {
+        message("เกิดข้อผิดพลาด");
+    }
+}
+
+async function deleteKey(encodedKey) {
+
+    const key =
+        decodeURIComponent(encodedKey);
+
+    if (!confirm(
+        "ต้องการลบ Key นี้หรือไม่?"
+    )) {
+        return;
+    }
+
+    try {
+
+        const response = await fetch(
+            "/api/admin/keys/" +
+            encodeURIComponent(key),
+            {
+                method: "DELETE",
+
+                headers: {
+                    "x-admin-password":
+                        adminPassword
+                }
+            }
+        );
+
+        if (!response.ok) {
+            message("ลบ Key ไม่สำเร็จ");
+            return;
+        }
+
+        loadKeys();
+
+    } catch {
+        message("เกิดข้อผิดพลาด");
+    }
+}
+
+async function copyKey(encodedKey) {
+
+    const key =
+        decodeURIComponent(encodedKey);
+
+    try {
+
+        await navigator.clipboard.writeText(key);
+
+        message("คัดลอก Key แล้ว ✓");
+
+    } catch {
+
+        message("คัดลอกไม่ได้");
+    }
+}
+
+function escapeHTML(value) {
+
+    return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+}
+
+</script>
+
+</body>
+</html>
