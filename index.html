@@ -1,1 +1,635 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#09090a">
 
+<title>Zero HUB</title>
+
+<style>
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    min-height: 100vh;
+    background: #09090a;
+    color: #fff;
+    font-family: Arial, sans-serif;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    width: 340px;
+    height: 340px;
+    top: -160px;
+    right: -130px;
+    background: radial-gradient(
+        circle,
+        rgba(212,175,55,.18),
+        transparent 70%
+    );
+    pointer-events: none;
+}
+
+.container {
+    width: 100%;
+    max-width: 430px;
+    min-height: 100vh;
+    margin: auto;
+    padding: 20px 18px 30px;
+}
+
+/* HEADER */
+
+header {
+    height: 55px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.logo span {
+    color: #d4af37;
+}
+
+.menu-button {
+    width: 43px;
+    height: 43px;
+
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 14px;
+
+    background: rgba(255,255,255,.045);
+    color: white;
+
+    font-size: 20px;
+    cursor: pointer;
+
+    transition: .2s;
+}
+
+.menu-button:active {
+    transform: scale(.92);
+}
+
+/* MENU */
+
+.menu-panel {
+    display: none;
+
+    margin-top: 10px;
+    padding: 10px;
+
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 18px;
+
+    background: rgba(20,20,22,.97);
+    backdrop-filter: blur(15px);
+}
+
+.menu-panel.active {
+    display: block;
+}
+
+.menu-item {
+    display: block;
+
+    padding: 14px 15px;
+
+    border-radius: 12px;
+
+    color: #ddd;
+    text-decoration: none;
+
+    font-size: 14px;
+
+    transition: .2s;
+}
+
+.menu-item:active {
+    background: rgba(212,175,55,.10);
+    color: #d4af37;
+}
+
+/* HERO */
+
+.hero {
+    padding: 70px 4px 38px;
+}
+
+.tag {
+    color: #d4af37;
+
+    font-size: 10px;
+    font-weight: bold;
+
+    letter-spacing: 3px;
+}
+
+h1 {
+    margin: 16px 0;
+
+    font-size: clamp(42px, 12vw, 52px);
+    line-height: .98;
+
+    letter-spacing: -2px;
+}
+
+h1 span {
+    color: #d4af37;
+}
+
+.description {
+    max-width: 350px;
+
+    color: #929298;
+
+    font-size: 14px;
+    line-height: 1.75;
+}
+
+/* BUTTONS */
+
+.buttons {
+    display: grid;
+    gap: 11px;
+
+    margin-top: 27px;
+}
+
+.btn {
+    width: 100%;
+    height: 55px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 17px;
+
+    text-decoration: none;
+
+    font-size: 14px;
+    font-weight: bold;
+
+    transition: .2s;
+}
+
+.btn:active {
+    transform: scale(.97);
+}
+
+.primary {
+    background: linear-gradient(
+        135deg,
+        #e4c663,
+        #a27b18
+    );
+
+    color: #111;
+
+    box-shadow:
+        0 8px 30px rgba(212,175,55,.12);
+}
+
+.secondary {
+    border: 1px solid #29292c;
+    background: #131315;
+    color: #fff;
+}
+
+/* SECTION */
+
+.section-title {
+    margin: 10px 3px 14px;
+
+    color: #777;
+
+    font-size: 10px;
+    letter-spacing: 2px;
+}
+
+/* CARDS */
+
+.grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.card {
+    min-height: 145px;
+
+    padding: 18px;
+
+    border: 1px solid #242427;
+    border-radius: 20px;
+
+    background:
+        linear-gradient(
+            145deg,
+            #18181a,
+            #101011
+        );
+
+    cursor: pointer;
+
+    transition:
+        transform .2s,
+        border-color .2s;
+}
+
+.card:active {
+    transform: scale(.97);
+    border-color: #8e731e;
+}
+
+.icon {
+    margin-bottom: 25px;
+
+    color: #d4af37;
+
+    font-size: 21px;
+}
+
+.card-title {
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.card-text {
+    margin-top: 7px;
+
+    color: #777;
+
+    font-size: 11px;
+    line-height: 1.55;
+}
+
+/* ABOUT */
+
+.about {
+    margin-top: 18px;
+    padding: 22px;
+
+    border: 1px solid #242427;
+    border-radius: 20px;
+
+    background: #111113;
+}
+
+.about-title {
+    margin-bottom: 10px;
+
+    color: #d4af37;
+
+    font-size: 14px;
+    font-weight: bold;
+}
+
+.about-text {
+    color: #85858b;
+
+    font-size: 12px;
+    line-height: 1.7;
+}
+
+/* FOOTER */
+
+footer {
+    padding-top: 40px;
+
+    text-align: center;
+
+    color: #555;
+
+    font-size: 9px;
+
+    letter-spacing: 2px;
+}
+
+/* ANIMATION */
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(15px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.hero,
+.card,
+.about {
+    animation: fadeUp .6s ease both;
+}
+
+/* DESKTOP */
+
+@media (min-width: 600px) {
+
+    .container {
+        padding-top: 35px;
+    }
+
+}
+</style>
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <!-- HEADER -->
+
+    <header>
+
+        <div class="logo">
+            Zero <span>HUB</span>
+        </div>
+
+        <button
+            class="menu-button"
+            id="menuButton"
+            aria-label="เปิดเมนู"
+        >
+            ☰
+        </button>
+
+    </header>
+
+
+    <!-- MENU -->
+
+    <nav
+        class="menu-panel"
+        id="menuPanel"
+    >
+
+        <a
+            href="#home"
+            class="menu-item"
+        >
+            หน้าแรก
+        </a>
+
+        <a
+            href="#features"
+            class="menu-item"
+        >
+            ฟีเจอร์
+        </a>
+
+        <a
+            href="#about"
+            class="menu-item"
+        >
+            เกี่ยวกับ Zero HUB
+        </a>
+
+    </nav>
+
+
+    <!-- HERO -->
+
+    <section
+        class="hero"
+        id="home"
+    >
+
+        <div class="tag">
+            ZERO HUB · EXPERIENCE
+        </div>
+
+        <h1>
+            ยินดีต้อนรับ<br>
+            สู่ <span>Zero HUB</span>
+        </h1>
+
+        <p class="description">
+            ศูนย์รวมระบบและเครื่องมือ
+            ในรูปแบบที่เรียบง่าย
+            สวยงาม และใช้งานง่ายบนมือถือ
+        </p>
+
+
+        <div class="buttons">
+
+            <a
+                href="#features"
+                class="btn primary"
+            >
+                เข้าสู่ Zero HUB
+            </a>
+
+            <a
+                href="#about"
+                class="btn secondary"
+            >
+                เกี่ยวกับเรา
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- FEATURES -->
+
+    <section id="features">
+
+        <div class="section-title">
+            ZERO HUB FEATURES
+        </div>
+
+
+        <div class="grid">
+
+            <article class="card">
+
+                <div class="icon">
+                    ✦
+                </div>
+
+                <div class="card-title">
+                    ระบบ
+                </div>
+
+                <div class="card-text">
+                    รวมฟังก์ชันต่าง ๆ
+                    ไว้ในที่เดียว
+                </div>
+
+            </article>
+
+
+            <article class="card">
+
+                <div class="icon">
+                    ◈
+                </div>
+
+                <div class="card-title">
+                    HUB
+                </div>
+
+                <div class="card-text">
+                    ศูนย์กลางสำหรับ
+                    เครื่องมือของคุณ
+                </div>
+
+            </article>
+
+
+            <article class="card">
+
+                <div class="icon">
+                    ⌁
+                </div>
+
+                <div class="card-title">
+                    Mobile
+                </div>
+
+                <div class="card-text">
+                    ออกแบบมาเพื่อ
+                    ใช้งานบนมือถือ
+                </div>
+
+            </article>
+
+
+            <article class="card">
+
+                <div class="icon">
+                    ↗
+                </div>
+
+                <div class="card-title">
+                    Fast
+                </div>
+
+                <div class="card-text">
+                    โหลดเร็ว
+                    และใช้งานง่าย
+                </div>
+
+            </article>
+
+        </div>
+
+    </section>
+
+
+    <!-- ABOUT -->
+
+    <section
+        class="about"
+        id="about"
+    >
+
+        <div class="about-title">
+            Zero HUB
+        </div>
+
+        <div class="about-text">
+            เว็บไซต์ศูนย์รวมของคุณ
+            สามารถเพิ่มเมนู ระบบ
+            รูปภาพ และฟังก์ชันต่าง ๆ
+            ได้ภายหลังโดยไม่ต้องสร้างเว็บใหม่
+        </div>
+
+    </section>
+
+
+    <!-- FOOTER -->
+
+    <footer>
+        ZERO HUB · 2026
+    </footer>
+
+</div>
+
+
+<script>
+
+/* =========================
+   MENU
+========================= */
+
+const menuButton =
+    document.getElementById("menuButton");
+
+const menuPanel =
+    document.getElementById("menuPanel");
+
+
+menuButton.addEventListener(
+    "click",
+    function () {
+
+        menuPanel.classList.toggle("active");
+
+        if (
+            menuPanel.classList.contains("active")
+        ) {
+
+            menuButton.textContent = "×";
+
+        } else {
+
+            menuButton.textContent = "☰";
+
+        }
+
+    }
+);
+
+
+/* =========================
+   CLOSE MENU
+========================= */
+
+document
+    .querySelectorAll(".menu-item")
+    .forEach(function(item) {
+
+        item.addEventListener(
+            "click",
+            function() {
+
+                menuPanel.classList.remove(
+                    "active"
+                );
+
+                menuButton.textContent = "☰";
+
+            }
+        );
+
+    });
+
+</script>
+
+</body>
+</html>
