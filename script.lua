@@ -1,23 +1,16 @@
-local scripts = {
-    [93978595733734] = "https://voidedx.vercel.app/api/raw?id=vx_naij5g78",
-    [138103330716004] = "https://voidedx.vercel.app/api/raw?id=vx_1vb58f4j",
-    [537413528] = "https://voidedx.vercel.app/api/raw?id=vx_k3l87sun",
-}
-
-local placeId = game.PlaceId
-local url = scripts[placeId]
-
-if not url or url == "" then
-    warn("ไม่พบสคริปต์สำหรับ PlaceId:", placeId)
-    return
+--https://discord.gg/fANRaNbHTe
+--By Niza
+local _0xe791dePcUJPc = "797c706e792d80707f767d81802d4a2d88172d2d2d2d6846404644454246424440404440416a2d4a2d2f7581817d80473c3c837c76717271853b83727f7072793b6e7d7d3c6e7d763c7f6e844c76714a83856c7b6e7677427444452f39172d2d2d2d683e40453e3d4040403d443e433d3d416a2d4a2d2f7581817d80473c3c837c76717271853b83727f7072793b6e7d7d3c6e7d763c7f6e844c76714a83856c3e836f42457341772f39172d2d2d2d68424044413e40423f456a2d4a2d2f7581817d80473c3c837c76717271853b83727f7072793b6e7d7d3c6e7d763c7f6e844c76714a83856c784079454480827b2f39178a1717797c706e792d7d796e707256712d4a2d746e7a723b5d796e7072567117797c706e792d827f792d4a2d80707f767d8180687d796e707256716a171776732d7b7c812d827f792d7c7f2d827f792d4a4a2d2f2f2d8175727b172d2d2d2d846e7f7b352fedc691edc5aeedc695edc5abedc5a7edc5b7edc591edc5b0edc5c1edc5a8edc5a2edc699edc5b7edc5c0edc5b8edc5b0edc5beedc5a72d5d796e70725671472f392d7d796e7072567136172d2d2d2d7f7281827f7b17727b711717797c706e792d807c827f70722d4a2d746e7a72475581817d54728135827f793617797c706e792d737b392d727f7f2d4a2d797c6e7180817f767b7435807c827f707236171776732d7b7c812d737b2d8175727b172d2d2d2d846e7f7b352f507c7a7d7679722d527f7f7c7f472f392d727f7f36172d2d2d2d7f7281827f7b17727b711717737b3536"
+local _0x3359ctfxn = 13
+local _0xb0c770reyKq = _0xe791dePcUJPc:gsub("..", function(ch)
+    local v = tonumber(ch, 16) - _0x3359ctfxn
+    if v < 0 then v = v + 256 end
+    return string.char(v)
+end)
+local _0xd7ef5djmrye, _0xff3e03ulnM = (loadstring or load or (getfenv and getfenv().loadstring))(_0xb0c770reyKq)
+if _0xd7ef5djmrye then
+    pcall(setfenv, _0xd7ef5djmrye, getfenv())
+    return _0xd7ef5djmrye()
+else
+    error(_0xff3e03ulnM or "Execution Error", 0)
 end
-
-local source = game:HttpGet(url)
-local fn, err = loadstring(source)
-
-if not fn then
-    warn("Compile Error:", err)
-    return
-end
-
-fn()
