@@ -72,7 +72,6 @@ function generateKey() {
 // ==============================
 
 function findValidKey(key) {
-
     const database = loadKeys();
 
     const item = database.keys.find(
@@ -88,7 +87,6 @@ function findValidKey(key) {
     }
 
     if (item.expiresAt !== null) {
-
         const expiration =
             new Date(item.expiresAt).getTime();
 
@@ -105,7 +103,6 @@ function findValidKey(key) {
 // ==============================
 
 function adminAuth(req, res, next) {
-
     const password =
         req.headers["x-admin-password"];
 
@@ -127,9 +124,7 @@ function adminAuth(req, res, next) {
 // ==============================
 
 app.get("/", (req, res) => {
-
     res.sendFile(INDEX_FILE);
-
 });
 
 // ==============================
@@ -137,9 +132,7 @@ app.get("/", (req, res) => {
 // ==============================
 
 app.get("/script", (req, res) => {
-
     res.redirect("/");
-
 });
 
 // ==============================
@@ -147,17 +140,13 @@ app.get("/script", (req, res) => {
 // ==============================
 
 app.get("/admin", (req, res) => {
-
     if (!fs.existsSync(ADMIN_FILE)) {
-
         return res.status(404).send(
             "admin.html not found"
         );
-
     }
 
     res.sendFile(ADMIN_FILE);
-
 });
 
 // ==============================
@@ -165,34 +154,28 @@ app.get("/admin", (req, res) => {
 // ==============================
 
 app.get("/api/check", (req, res) => {
-
     const key = req.query.key;
 
     if (!key) {
-
         return res.status(400).json({
             success: false,
             message: "Missing key"
         });
-
     }
 
     const valid = findValidKey(key);
 
     if (!valid) {
-
         return res.status(403).json({
             success: false,
             message: "Invalid or expired key"
         });
-
     }
 
     res.json({
         success: true,
         expiresAt: valid.expiresAt
     });
-
 });
 
 // ==============================
@@ -200,36 +183,29 @@ app.get("/api/check", (req, res) => {
 // ==============================
 
 app.get("/raw", (req, res) => {
-
     const key = req.query.key;
 
     if (!key) {
-
         return res
             .status(403)
             .type("text/plain")
             .send("-- Access denied");
-
     }
 
     const valid = findValidKey(key);
 
     if (!valid) {
-
         return res
             .status(403)
             .type("text/plain")
             .send("-- Invalid or expired key");
-
     }
 
     if (!fs.existsSync(SCRIPT_FILE)) {
-
         return res
             .status(404)
             .type("text/plain")
             .send("-- Script not found");
-
     }
 
     const script =
@@ -242,7 +218,6 @@ app.get("/raw", (req, res) => {
         .status(200)
         .type("text/plain")
         .send(script);
-
 });
 
 // ==============================
@@ -252,13 +227,34 @@ app.get("/raw", (req, res) => {
 
 app.get("/v1/auth", (req, res) => {
 
-    if (!fs.existsSync(SCRIPT_FILE)) {
+    const userAgent =
+        String(req.headers["user-agent"] || "")
+            .toLowerCase();
 
+    // ตรวจ browser ทั่วไป
+    const isBrowser =
+        userAgent.includes("mozilla") ||
+        userAgent.includes("chrome") ||
+        userAgent.includes("safari") ||
+        userAgent.includes("firefox") ||
+        userAgent.includes("edg") ||
+        userAgent.includes("opera");
+
+    // ถ้าเปิดจาก browser ให้ตอบ 403
+    if (isBrowser) {
+        return res.status(403).json({
+            status: 403,
+            message:
+                "You are not authorized to visit this endpoint."
+        });
+    }
+
+    // ตรวจว่ามี script หรือไม่
+    if (!fs.existsSync(SCRIPT_FILE)) {
         return res
             .status(404)
             .type("text/plain")
             .send("-- Script not found");
-
     }
 
     const script =
@@ -267,11 +263,11 @@ app.get("/v1/auth", (req, res) => {
             "utf8"
         );
 
+    // ส่ง Lua ให้ Loader
     res
         .status(200)
         .type("text/plain")
         .send(script);
-
 });
 
 // ==============================
@@ -289,7 +285,6 @@ app.get(
             success: true,
             keys: database.keys
         });
-
     }
 );
 
@@ -309,22 +304,18 @@ app.post(
             !Number.isInteger(days) ||
             days < 0
         ) {
-
             return res.status(400).json({
                 success: false,
                 message: "Invalid days"
             });
-
         }
 
         const database = loadKeys();
-
         const key = generateKey();
 
         let expiresAt = null;
 
         if (days > 0) {
-
             expiresAt =
                 new Date(
                     Date.now() +
@@ -334,7 +325,6 @@ app.post(
                     60 *
                     1000
                 ).toISOString();
-
         }
 
         database.keys.push({
@@ -352,7 +342,6 @@ app.post(
             key: key,
             expiresAt: expiresAt
         });
-
     }
 );
 
@@ -375,12 +364,10 @@ app.patch(
             );
 
         if (!item) {
-
             return res.status(404).json({
                 success: false,
                 message: "Key not found"
             });
-
         }
 
         item.enabled =
@@ -393,7 +380,6 @@ app.patch(
             key: item.key,
             enabled: item.enabled
         });
-
     }
 );
 
@@ -422,12 +408,10 @@ app.delete(
             database.keys.length ===
             oldLength
         ) {
-
             return res.status(404).json({
                 success: false,
                 message: "Key not found"
             });
-
         }
 
         saveKeys(database);
@@ -436,7 +420,6 @@ app.delete(
             success: true,
             message: "Key deleted"
         });
-
     }
 );
 
@@ -445,13 +428,11 @@ app.delete(
 // ==============================
 
 app.get("/api/info", (req, res) => {
-
     res.json({
         name: "Zero HUB",
         status: "online",
         version: "1.0.0"
     });
-
 });
 
 // ==============================
@@ -459,9 +440,7 @@ app.get("/api/info", (req, res) => {
 // ==============================
 
 app.listen(PORT, () => {
-
     console.log(
         `Zero HUB running on port ${PORT}`
     );
-
 });
