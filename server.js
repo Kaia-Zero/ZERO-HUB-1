@@ -128,11 +128,12 @@ app.get("/", (req, res) => {
 });
 
 // ==============================
-// SCRIPT PAGE
+// WEBSITE
+// /script
 // ==============================
 
 app.get("/script", (req, res) => {
-    res.redirect("/");
+    res.sendFile(INDEX_FILE);
 });
 
 // ==============================
@@ -140,6 +141,7 @@ app.get("/script", (req, res) => {
 // ==============================
 
 app.get("/admin", (req, res) => {
+
     if (!fs.existsSync(ADMIN_FILE)) {
         return res.status(404).send(
             "admin.html not found"
@@ -154,6 +156,7 @@ app.get("/admin", (req, res) => {
 // ==============================
 
 app.get("/api/check", (req, res) => {
+
     const key = req.query.key;
 
     if (!key) {
@@ -183,6 +186,7 @@ app.get("/api/check", (req, res) => {
 // ==============================
 
 app.get("/raw", (req, res) => {
+
     const key = req.query.key;
 
     if (!key) {
@@ -227,29 +231,6 @@ app.get("/raw", (req, res) => {
 
 app.get("/v1/auth", (req, res) => {
 
-    const userAgent =
-        String(req.headers["user-agent"] || "")
-            .toLowerCase();
-
-    // ตรวจ browser ทั่วไป
-    const isBrowser =
-        userAgent.includes("mozilla") ||
-        userAgent.includes("chrome") ||
-        userAgent.includes("safari") ||
-        userAgent.includes("firefox") ||
-        userAgent.includes("edg") ||
-        userAgent.includes("opera");
-
-    // ถ้าเปิดจาก browser ให้ตอบ 403
-    if (isBrowser) {
-        return res.status(403).json({
-            status: 403,
-            message:
-                "You are not authorized to visit this endpoint."
-        });
-    }
-
-    // ตรวจว่ามี script หรือไม่
     if (!fs.existsSync(SCRIPT_FILE)) {
         return res
             .status(404)
@@ -263,7 +244,6 @@ app.get("/v1/auth", (req, res) => {
             "utf8"
         );
 
-    // ส่ง Lua ให้ Loader
     res
         .status(200)
         .type("text/plain")
@@ -428,6 +408,7 @@ app.delete(
 // ==============================
 
 app.get("/api/info", (req, res) => {
+
     res.json({
         name: "Zero HUB",
         status: "online",
@@ -440,7 +421,9 @@ app.get("/api/info", (req, res) => {
 // ==============================
 
 app.listen(PORT, () => {
+
     console.log(
         `Zero HUB running on port ${PORT}`
     );
+
 });
