@@ -15,6 +15,7 @@ const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
 const KEYS_FILE = path.join(__dirname, "keys.json");
 const SCRIPT_FILE = path.join(__dirname, "script.lua");
 const ADMIN_FILE = path.join(__dirname, "admin.html");
+const INDEX_FILE = path.join(__dirname, "index.html");
 
 // ==============================
 // MIDDLEWARE
@@ -124,9 +125,15 @@ function adminAuth(req, res, next) {
 // ==============================
 
 app.get("/", (req, res) => {
-    res.sendFile(
-        path.join(__dirname, "index.html")
-    );
+    res.sendFile(INDEX_FILE);
+});
+
+// ==============================
+// SCRIPT WEBSITE LINK
+// ==============================
+
+app.get("/script", (req, res) => {
+    res.redirect("/");
 });
 
 // ==============================
@@ -264,7 +271,6 @@ app.post(
         let expiresAt = null;
 
         if (days > 0) {
-
             expiresAt =
                 new Date(
                     Date.now() +
